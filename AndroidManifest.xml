@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.taptag.beta"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="14" />
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <application
+        android:icon="@drawable/taptag"
+        android:label="@string/app_name"
+        android:debuggable="true" >
+        <activity
+            android:name=".TapTagActivity"
+            android:label="@string/app_name" >
+        </activity>
+        
+        <activity
+            android:name=".HomeScreen"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity
+            android:name=".VendorActivity"
+            android:label="@string/app_name">
+                        
+            <!-- Handle NFC -->
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/com.taptag.tag" />
+            </intent-filter>
+        </activity>
+        
+        <activity
+            android:name=".VendorListActivity"
+            android:label="@string/app_name" 
+            android:windowSoftInputMode="stateHidden">
+        </activity>
+        
+    </application>
+
+</manifest>

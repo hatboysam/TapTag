@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, TapTagActivity!</string>
+    <string name="app_name">TapTag</string>
+    <color name="button_back">#00FFFFFF</color>
+    <color name="grey_back">#4C4C4C</color>
+
+</resources>

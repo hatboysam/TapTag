@@ -3,6 +3,7 @@ package com.taptag.beta.vendor;
 import java.util.ArrayList;
 
 import com.taptag.beta.R;
+import com.taptag.beta.list.AbstractCustomAdapter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,22 +14,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
 
-public abstract class AbstractVendorAdapter extends ArrayAdapter<Vendor> {
-
-	Context context;
-	int textViewResourceId;
-	int viewId;
-	Vendor[] originalData;
-	Vendor[] data;
+public abstract class AbstractVendorAdapter extends AbstractCustomAdapter<Vendor> {
+	
 	Filter filter;
 
 	public AbstractVendorAdapter(Context context, int viewId, int textViewResourceId, Vendor[] objects) {
 		super(context, viewId, textViewResourceId, objects);
-		this.context = context;
-		this.textViewResourceId = textViewResourceId;
-		this.viewId = viewId;
-		this.data = objects;
-		this.originalData = objects;
 		this.filter = new VendorFilter();
 	}
 	
@@ -49,26 +40,6 @@ public abstract class AbstractVendorAdapter extends ArrayAdapter<Vendor> {
 		addressView.setText(vendor.getAddress().toString());
 		
 		return row;
-	}
-	
-	@Override
-	public int getCount() {
-		return data.length;
-	}
-	
-	@Override
-	public Vendor getItem(int position) {
-		if (position >= 0) {
-			return data[position];
-		} else {
-			return null;
-		}
-	}
-	
-	@Override
-	public void notifyDataSetChanged() {
-		sortData();
-		super.notifyDataSetChanged();
 	}
 	
 	public String[] getNames() {

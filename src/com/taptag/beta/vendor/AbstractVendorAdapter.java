@@ -14,34 +14,38 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
 
-public abstract class AbstractVendorAdapter extends AbstractCustomAdapter<Vendor> {
-	
+public abstract class AbstractVendorAdapter extends
+		AbstractCustomAdapter<Vendor> {
+
 	Filter filter;
 
-	public AbstractVendorAdapter(Context context, int viewId, int textViewResourceId, Vendor[] objects) {
+	public AbstractVendorAdapter(Context context, int viewId,
+			int textViewResourceId, Vendor[] objects) {
 		super(context, viewId, textViewResourceId, objects);
 		this.filter = new VendorFilter();
 	}
-	
-	@Override 
+
+	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View row = convertView;
-		
+
 		if (row == null) {
 			LayoutInflater inflater = ((Activity) context).getLayoutInflater();
 			row = inflater.inflate(viewId, parent, false);
 		}
-		
-		TextView nameView = (TextView) row.findViewById(R.id.vendorListItemName);
-		TextView addressView = (TextView) row.findViewById(R.id.vendorListItemAddress);
-		
+
+		TextView nameView = (TextView) row
+				.findViewById(R.id.vendorListItemName);
+		TextView addressView = (TextView) row
+				.findViewById(R.id.vendorListItemAddress);
+
 		Vendor vendor = data[position];
 		nameView.setText(vendor.getName());
 		addressView.setText(vendor.getAddress().toString());
-		
+
 		return row;
 	}
-	
+
 	public String[] getNames() {
 		String[] results = new String[originalData.length];
 		for (int i = 0; i < originalData.length; i++) {
@@ -49,11 +53,11 @@ public abstract class AbstractVendorAdapter extends AbstractCustomAdapter<Vendor
 		}
 		return results;
 	}
-	
+
 	public Filter getFilter() {
 		return filter;
 	}
-	
+
 	public abstract void sortData();
 
 	private class VendorFilter extends Filter {
@@ -74,7 +78,8 @@ public abstract class AbstractVendorAdapter extends AbstractCustomAdapter<Vendor
 					}
 				}
 				int resultSize = matches.size();
-				Vendor[] matchingVendors = matches.toArray(new Vendor[resultSize]);
+				Vendor[] matchingVendors = matches
+						.toArray(new Vendor[resultSize]);
 				results.count = resultSize;
 				results.values = matchingVendors;
 			}
@@ -82,11 +87,12 @@ public abstract class AbstractVendorAdapter extends AbstractCustomAdapter<Vendor
 		}
 
 		@Override
-		protected void publishResults(CharSequence constraint, FilterResults results) {
+		protected void publishResults(CharSequence constraint,
+				FilterResults results) {
 			Vendor[] vendors = (Vendor[]) results.values;
 			AbstractVendorAdapter.this.data = vendors;
 			notifyDataSetChanged();
-			//clear();
+			// clear();
 		}
 
 	}

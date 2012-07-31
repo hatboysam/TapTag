@@ -1,7 +1,7 @@
 package com.taptag.beta.reward;
 
 public class Reward {
-	
+
 	private String title;
 	private int progress;
 	private int max;
@@ -11,7 +11,7 @@ public class Reward {
 		this.max = max;
 		this.progress = progress;
 	}
-	
+
 	public String getTitle() {
 		return title;
 	}

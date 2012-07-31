@@ -14,7 +14,9 @@ public class ProximityVendorAdapter extends AbstractVendorAdapter {
 	private Double maxDistance;
 	private VendorSorter sorter;
 
-	public ProximityVendorAdapter(Context context, int viewId, int textViewResourceId, Vendor[] objects, Double[] location, Double maxDistance) {
+	public ProximityVendorAdapter(Context context, int viewId,
+			int textViewResourceId, Vendor[] objects, Double[] location,
+			Double maxDistance) {
 		super(context, viewId, textViewResourceId, objects);
 		this.location = location;
 		this.maxDistance = maxDistance;
@@ -23,11 +25,11 @@ public class ProximityVendorAdapter extends AbstractVendorAdapter {
 
 	@Override
 	public void sortData() {
-		//TODO implement max distance filter
+		// TODO implement max distance filter
 		Arrays.sort(data, sorter);
 	}
 
-	public class VendorSorter implements Comparator<Vendor> {	
+	public class VendorSorter implements Comparator<Vendor> {
 
 		Double[] sortLocation;
 
@@ -37,12 +39,14 @@ public class ProximityVendorAdapter extends AbstractVendorAdapter {
 
 		@Override
 		public int compare(Vendor v0, Vendor v1) {
-			Double[] latLong0 = v0.getAddress().getLatLong(context);
-			Double[] latLong1 = v1.getAddress().getLatLong(context);
-			Double dist0 = TagAddress.getDistance(latLong0, sortLocation);
-			Double dist1 = TagAddress.getDistance(latLong1, sortLocation);
-			return dist0.compareTo(dist1);
+			// Double[] latLong0 = v0.getAddress().getLatLong(context);
+			// Double[] latLong1 = v1.getAddress().getLatLong(context);
+			// Double dist0 = TagAddress.getDistance(latLong0, sortLocation);
+			// Double dist1 = TagAddress.getDistance(latLong1, sortLocation);
+			// return dist0.compareTo(dist1);
+			return 0;
 		}
+
 	}
 
 }

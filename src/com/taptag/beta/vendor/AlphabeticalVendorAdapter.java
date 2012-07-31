@@ -15,12 +15,13 @@ import android.widget.Filter;
 import android.widget.TextView;
 
 public class AlphabeticalVendorAdapter extends AbstractVendorAdapter {
-	
-	public AlphabeticalVendorAdapter(Context context, int viewId, int textViewResourceId, Vendor[] objects) {
+
+	public AlphabeticalVendorAdapter(Context context, int viewId,
+			int textViewResourceId, Vendor[] objects) {
 		super(context, viewId, textViewResourceId, objects);
 	}
 
 	public void sortData() {
 		Arrays.sort(data);
-	}		
+	}
 }

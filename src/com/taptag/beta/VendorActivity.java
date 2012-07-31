@@ -1,25 +1,14 @@
 package com.taptag.beta;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.DeserializationConfig.Feature;
-import org.codehaus.jackson.map.ObjectMapper;
-
 import com.taptag.beta.nfc.NFCActions;
 import com.taptag.beta.reward.Reward;
 import com.taptag.beta.reward.RewardAdapter;
 import com.taptag.beta.vendor.Vendor;
+import com.taptag.beta.network.*;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -42,42 +31,35 @@ public class VendorActivity extends Activity {
 	private NfcAdapter nfcAdapter;
 	private PendingIntent nfcIntent;
 
-	private ObjectMapper objectMapper = new ObjectMapper();
-	private JsonFactory jsonFactory = new JsonFactory();
-	private JsonParser jp = null;
-
-	private Vendor vendor = new Vendor();
+	private Vendor vendor = null;
+	private Reward[] allRewards = new Reward[0];
+	private RewardAdapter adapter;
+	private ProgressDialog loading;
+	
+	private boolean rewardsLoaded;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.vendor);
 
-		Reward[] sampleRewards = new Reward[] {
-				new Reward("Free Sammich", 3, 9),
-				new Reward("Come 10 Times", 9, 10),
-				new Reward("Be Totally Awesome", 2, 11) };
+		//Getting the JSON
+		//StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		//StrictMode.setThreadPolicy(policy);
 
-		// Getting the json.
-		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-				.permitAll().build();
-		StrictMode.setThreadPolicy(policy);
+		//connect();
 
-		connect();
-		new Connection().execute();
-
-		RewardAdapter adapter = new RewardAdapter(this,
-				R.layout.rewardlistitem, sampleRewards);
+		
 
 		vendorNameTextView = (TextView) findViewById(R.id.vendorName);
 		vendorAddressTextView = (TextView) findViewById(R.id.vendorAddress);
 		rewardListView = (ListView) findViewById(R.id.rewardlist);
-		rewardListView.setAdapter(adapter);
 
 		// Check for NFC
-		nfcIntent = PendingIntent.getActivity(this, 0, (new Intent(this,
-				getClass())).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		nfcIntent = PendingIntent.getActivity(this, 0, (new Intent(this, getClass())).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 		nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		
+		rewardsLoaded = false;
 	}
 
 	@Override
@@ -89,10 +71,10 @@ public class VendorActivity extends Activity {
 			setIntent(new Intent()); // Consume this intent.
 		} else if (VendorActivity.VIEW_VENDOR.equals(intent.getAction())) {
 			Bundle extras = intent.getExtras();
-			//Vendor v = (Vendor) extras.get("vendor");
+			vendor = (Vendor) extras.get("vendor");
 			setInfoFromVendor(vendor);
 		}
-
+		rewardsLoaded = false;
 	}
 
 	@Override
@@ -101,9 +83,27 @@ public class VendorActivity extends Activity {
 			setInfoFromNFCIntent(intent);
 		} else if (VendorActivity.VIEW_VENDOR.equals(intent.getAction())) {
 			Bundle extras = intent.getExtras();
-			//Vendor v = (Vendor) extras.get("vendor");
+			vendor = (Vendor) extras.get("vendor");
 			setInfoFromVendor(vendor);
 		}
+	}
+	
+	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		// Load all places in background
+		if (hasFocus && !rewardsLoaded) {
+			showLoadingDialog();
+			final Intent intent = getIntent();
+			Thread backgroundThread = new Thread(new Runnable() {
+				public void run() {
+					RewardsFetchTask task = new RewardsFetchTask();
+					task.execute(null, null, null);
+				}
+			});
+			backgroundThread.run();
+		}
+		rewardsLoaded = true;
 	}
 
 	/**
@@ -131,45 +131,38 @@ public class VendorActivity extends Activity {
 		vendorNameTextView.setText(vendor.getName());
 		vendorAddressTextView.setText(vendor.getAddress().toString());
 	}
-
-	private class Connection extends AsyncTask {
+	
+	/**
+	 * Display a loading dialog, for long operations
+	 */
+	public void showLoadingDialog() {
+		if (loading == null) {
+			loading = ProgressDialog.show(VendorActivity.this, "TapTag", "Loading Rewards...", true);
+			loading.setCancelable(true);
+		} else {
+			loading.show();
+		}
+	}
+	
+	/**
+	 * Task to fetch the rewards for this Vendor
+	 * @author samstern
+	 */
+	public class RewardsFetchTask extends AsyncTask<Void, Void, Void> {
 
 		@Override
-		protected Object doInBackground(Object... arg0) {
-			connect();
+		protected Void doInBackground(Void... params) {
+			Reward[] rewards = TapTagAPI.progressByUserAndCompany(201, vendor.getCompanyId());
+			VendorActivity.this.allRewards = rewards;
 			return null;
 		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			adapter = new RewardAdapter(VendorActivity.this, R.layout.rewardlistitem, allRewards);
+			rewardListView.setAdapter(adapter);
+			loading.dismiss();
+		}	
 	}
 
-	private void connect() {
-		try {
-			DefaultHttpClient client = new DefaultHttpClient();
-			HttpGet request = new HttpGet(
-					"https://taptag.herokuapp.com/vendors/44.json");
-			HttpResponse response = client.execute(request);
-
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					response.getEntity().getContent(), "UTF-8"));
-			StringBuilder builder = new StringBuilder();
-
-			for (String line = null; (line = reader.readLine()) != null;) {
-				builder.append(line).append("\n");
-			}
-
-			String json = builder.toString();
-
-			try {
-				jp = jsonFactory.createJsonParser(json);
-				objectMapper.configure(Feature.UNWRAP_ROOT_VALUE, true);
-				vendor = objectMapper.readValue(jp, Vendor.class);
-				Log.e(vendor.getName(), vendor.toString());
-			} catch (JsonParseException e) {
-				e.printStackTrace();
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
 }

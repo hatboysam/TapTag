@@ -20,6 +20,7 @@ import android.widget.ImageButton;
 public class HomeScreen extends Activity {
 	private Facebook facebook = new Facebook("467907829887006");
 	private SharedPreferences mPrefs;
+	private static final boolean USE_FACEBOOK = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -74,8 +75,7 @@ public class HomeScreen extends Activity {
 		/*
 		 * Only call authorize if the access_token has expired.
 		 */
-		if (!facebook.isSessionValid()) {
-
+		if (USE_FACEBOOK && !facebook.isSessionValid()) {
 			facebook.authorize(this, new String[] {}, new DialogListener() {
 				public void onComplete(Bundle values) {
 					SharedPreferences.Editor editor = mPrefs.edit();
@@ -84,13 +84,10 @@ public class HomeScreen extends Activity {
 							facebook.getAccessExpires());
 					editor.commit();
 				}
-
 				public void onFacebookError(FacebookError error) {
 				}
-
 				public void onError(DialogError e) {
 				}
-
 				public void onCancel() {
 				}
 			});
@@ -100,20 +97,15 @@ public class HomeScreen extends Activity {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-
 		facebook.authorizeCallback(requestCode, resultCode, data);
 		facebook.authorize(this, new String[] { "email" },
-
 		new DialogListener() {
 			public void onComplete(Bundle values) {
 			}
-
 			public void onFacebookError(FacebookError error) {
 			}
-
 			public void onError(DialogError e) {
 			}
-
 			public void onCancel() {
 			}
 		});

@@ -1,5 +1,7 @@
 package com.taptag.beta.reward;
 
+import java.util.Arrays;
+
 import com.taptag.beta.R;
 
 import android.app.Activity;
@@ -24,6 +26,16 @@ public class RewardAdapter extends ArrayAdapter<Reward> {
 		this.context = context;
 		this.data = objects;
 	}
+	
+	@Override
+	public void notifyDataSetChanged() {
+		sortData();
+		super.notifyDataSetChanged();
+	}
+	
+	public void sortData() {
+		Arrays.sort(data);
+	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
@@ -35,15 +47,20 @@ public class RewardAdapter extends ArrayAdapter<Reward> {
 		}
 
 		TextView titleView = (TextView) row.findViewById(R.id.rewardListTitle);
-		ProgressBar rewardProgress = (ProgressBar) row
-				.findViewById(R.id.rewardListProgress);
+		TextView descriptionView = (TextView) row.findViewById(R.id.rewardListDescription);
+		ProgressBar rewardProgress = (ProgressBar) row.findViewById(R.id.rewardListProgress);
 
 		Reward reward = data[position];
-		titleView.setText(reward.getTitle());
-		rewardProgress.setMax(reward.getMax());
+		titleView.setText(reward.getName());
+		descriptionView.setText(reward.getDescription());
+		rewardProgress.setMax(reward.getTotal());
 		rewardProgress.setProgress(reward.getProgress());
 
 		return row;
+	}
+	
+	public void replaceAllData(Reward[] data) {
+		this.data = data;
 	}
 
 }

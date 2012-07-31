@@ -1,11 +1,12 @@
 package com.taptag.beta;
 
 import java.util.Date;
-import com.taptag.beta.location.TagAddress;
 import com.taptag.beta.vendor.AbstractVendorAdapter;
 import com.taptag.beta.vendor.ProximityVendorAdapter;
 import com.taptag.beta.vendor.Vendor;
 import com.taptag.beta.vendor.AlphabeticalVendorAdapter;
+import com.taptag.beta.location.TagAddress;
+import com.taptag.beta.network.*;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -47,17 +48,11 @@ public class VendorListActivity extends Activity {
 		// locator = new Locator(this);
 
 		allData = new Vendor[] {
-				new Vendor("Pizza Palace", new TagAddress(
-						"140 East 14th Street", "New York", "NY", "10003")),
-				new Vendor("Dunkin Donuts", new TagAddress("425 Corte Sur",
-						"Novato", "CA", "94949")),
-				new Vendor("Chipotle", new TagAddress("3706 Locust Walk",
-						"Philadelphia", "PA", "19104")),
-				new Vendor("Duane Reade", new TagAddress("1147 Barbara Drive",
-						"Cherry Hill", "NJ", "08003")),
-				new Vendor("Varun's Curry Emporium", new TagAddress(
-						"10475 Crosspoint Boulevard", "Indianapolis", "IN",
-						"46256")) };
+				new Vendor("Pizza Palace", new TagAddress("140 East 14th Street", "New York", "NY", "10003")),
+				new Vendor("Dunkin Donuts", new TagAddress("425 Corte Sur","Novato", "CA", "94949")),
+				new Vendor("Chipotle", new TagAddress("3706 Locust Walk","Philadelphia", "PA", "19104")),
+				new Vendor("Duane Reade", new TagAddress("1147 Barbara Drive","Cherry Hill", "NJ", "08003")),
+				new Vendor("Varun's Curry Emporium", new TagAddress("10475 Crosspoint Boulevard", "Indianapolis", "IN","46256")) };
 
 		vendorListView = (ListView) findViewById(R.id.vendorList);
 		titleView = (TextView) findViewById(R.id.vendorListTitle);
@@ -179,11 +174,9 @@ public class VendorListActivity extends Activity {
 	 */
 	public void configureOnClickListener() {
 		vendorListView.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Vendor clicked = adapter.getItem(position);
-				Intent toVendor = new Intent(VendorListActivity.this,
-						VendorActivity.class);
+				Intent toVendor = new Intent(VendorListActivity.this, VendorActivity.class);
 				toVendor.setAction(VendorActivity.VIEW_VENDOR);
 				Bundle extras = new Bundle();
 				extras.putSerializable("vendor", clicked);
@@ -218,12 +211,14 @@ public class VendorListActivity extends Activity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			Log.i("TapTag", "Setting Adapter...");
+			allData = TapTagAPI.vendorsVisitedBy(201);
 			return null;
 		}
 
 		@Override
 		protected void onPostExecute(Void result) {
 			vendorListView.setAdapter(adapter);
+			adapter.replaceAllData(allData);
 			VendorListActivity.this.configureAutoComplete();
 			VendorListActivity.this.configureOnClickListener();
 			adapter.notifyDataSetChanged();

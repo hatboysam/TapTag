@@ -7,10 +7,17 @@
     
     <TextView
         android:id="@+id/rewardListTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Reward #1"
         android:textSize="10pt" />
+    
+    <TextView
+        android:id="@+id/rewardListDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:textSize="6pt" />
 
     <ProgressBar
         android:id="@+id/rewardListProgress"

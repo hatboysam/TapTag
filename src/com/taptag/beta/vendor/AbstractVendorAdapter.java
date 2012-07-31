@@ -57,6 +57,11 @@ public abstract class AbstractVendorAdapter extends
 	public Filter getFilter() {
 		return filter;
 	}
+	
+	public void replaceAllData(Vendor[] objects) {
+		this.data = objects;
+		this.originalData = objects;
+	}
 
 	public abstract void sortData();
 

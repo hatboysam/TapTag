@@ -1,10 +1,12 @@
 package com.taptag.beta;
 
+
 import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
-import com.facebook.android.FacebookError;
 import com.facebook.android.Facebook.DialogListener;
+import com.facebook.android.FacebookError;
 import com.taptag.beta.R;
+
 
 import android.app.Activity;
 import android.content.Intent;

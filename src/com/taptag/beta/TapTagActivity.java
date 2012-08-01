@@ -1,17 +1,22 @@
 package com.taptag.beta;
 
 import com.taptag.beta.R;
+import com.taptag.beta.network.TapTagAPI;
 import com.taptag.beta.nfc.NFCActions;
+import com.taptag.beta.vendor.AlphabeticalVendorAdapter;
+import com.taptag.beta.vendor.Vendor;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -33,7 +38,11 @@ public class TapTagActivity extends Activity {
 	private PendingIntent nfcIntent;
 	private IntentFilter[] writeTagFilters;
 	private IntentFilter[] ndefExchangeFilters;
-	private String toWrite;
+	private Vendor toWrite;
+	private Vendor[] allData;
+	private ProgressDialog loading;
+	private ListView writeList;
+	private AlphabeticalVendorAdapter listAdapter;
 
 	/**
 	 * Static/Final Things
@@ -50,14 +59,12 @@ public class TapTagActivity extends Activity {
 		adapter = NfcAdapter.getDefaultAdapter(this);
 		writeMode = false;
 		resumed = false;
-		toWrite = "No Selection Made";
+		toWrite = new Vendor();
 
 		// Handle NFC Pending Intents
-		nfcIntent = PendingIntent.getActivity(this, 0, (new Intent(this,
-				getClass())).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		nfcIntent = PendingIntent.getActivity(this, 0, (new Intent(this, getClass())).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 		// Add intent filter for reading from a tag
-		IntentFilter ndefDetected = new IntentFilter(
-				NfcAdapter.ACTION_NDEF_DISCOVERED);
+		IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
 		try {
 			ndefDetected.addDataType(TAG_MIME);
 		} catch (MalformedMimeTypeException e) {
@@ -65,11 +72,11 @@ public class TapTagActivity extends Activity {
 		}
 		ndefExchangeFilters = new IntentFilter[] { ndefDetected };
 		// Intent filter for writing to a tag
-		IntentFilter tagDetected = new IntentFilter(
-				NfcAdapter.ACTION_TAG_DISCOVERED);
+		IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
 		writeTagFilters = new IntentFilter[] { tagDetected };
 
 		// Initialize the list view
+		writeList = (ListView) findViewById(R.id.writelist);
 		initListView();
 	}
 
@@ -89,13 +96,11 @@ public class TapTagActivity extends Activity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		// Writing mode
-		if (writeMode
-				&& NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
+		if (writeMode && NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
 			Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-			boolean writeResult = NFCActions.writeTag(detectedTag, "My App",
-					toWrite);
+			boolean writeResult = NFCActions.writeTag(detectedTag, toWrite);
 			if (writeResult) {
-				toastShort("Tag Written");
+				toastShort("Tag Written: " + toWrite.getName());
 			} else {
 				toastShort("Tag Not Written");
 			}
@@ -106,27 +111,24 @@ public class TapTagActivity extends Activity {
 	 * Populate the List view and set the OnItemClickListener
 	 */
 	private void initListView() {
-		ListView writeList = (ListView) findViewById(R.id.writelist);
-		String[] sampleValues = { "140 East 14th Street, New York, NY 10003",
-				"1147 Barbara Drive, Cherry Hill, NJ 08003",
-				"3706 Locust Walk, Philadelphia PA 19104" };
-		// First - context
-		// Second - layout for the row
-		// Third - ID of the View to which the data is written
-		// Fourth - array of data
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, android.R.id.text1,
-				sampleValues);
-
-		writeList.setAdapter(adapter);
+		showLoadingDialog();
+		Thread backgroundThread = new Thread(new Runnable() {
+			public void run() {
+				LoadPlacesTask task = new LoadPlacesTask();
+				task.execute(null, null, null);
+			}
+		});
+		backgroundThread.run();
+	}
+	
+	private void configureOnClickListener() {
 		writeList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				// Get the text from the current selected view
-				TextView clickedView = (TextView) view;
-				String clickedText = (String) clickedView.getText();
-				toWrite = clickedText;
+				Vendor vendor = listAdapter.getItem(position);
+				toWrite = vendor;
 				// Popup with write prompt
 				disableExchangeMode();
 				showWriteDialog();
@@ -149,7 +151,7 @@ public class TapTagActivity extends Activity {
 	 * Enable NFC tag exchange mode
 	 */
 	private void enableExchangeMode() {
-		adapter.enableForegroundNdefPush(this, NFCActions.stringAsNdef(toWrite));
+		adapter.enableForegroundNdefPush(this, NFCActions.vendorAsNdef(toWrite));
 		adapter.enableForegroundDispatch(this, nfcIntent, ndefExchangeFilters,
 				null);
 	}
@@ -177,7 +179,7 @@ public class TapTagActivity extends Activity {
 		enableWriteMode();
 		AlertDialog.Builder ad = new AlertDialog.Builder(this);
 		ad.setTitle("Write Tag");
-		ad.setMessage(toWrite);
+		ad.setMessage(toWrite.getName());
 		ad.setOnCancelListener(new DialogInterface.OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface dialog) {
@@ -189,8 +191,40 @@ public class TapTagActivity extends Activity {
 		ad.create();
 		ad.show();
 	}
+	
+	/**
+	 * Display a loading dialog, for long operations
+	 */
+	public void showLoadingDialog() {
+		if (loading == null) {
+			loading = ProgressDialog.show(TapTagActivity.this, "TapTag", "Loading Places...", true);
+			loading.setCancelable(true);
+		} else {
+			loading.show();
+		}
+	}
 
 	private void toastShort(String message) {
 		Toast.makeText(TapTagActivity.this, message, Toast.LENGTH_SHORT).show();
+	}
+	
+	public class LoadPlacesTask extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			allData = TapTagAPI.vendorsVisitedBy(201);
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			//TODO create and set adapter
+			listAdapter = new AlphabeticalVendorAdapter(TapTagActivity.this,
+					R.layout.vendorlistitem, R.id.vendorListItemName, allData);
+			writeList.setAdapter(listAdapter);
+			configureOnClickListener();
+			listAdapter.notifyDataSetChanged();
+			loading.dismiss();
+		}
 	}
 }

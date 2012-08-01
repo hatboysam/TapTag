@@ -42,15 +42,7 @@ public class VendorActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.vendor);
-
-		//Getting the JSON
-		//StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-		//StrictMode.setThreadPolicy(policy);
-
-		//connect();
-
 		
-
 		vendorNameTextView = (TextView) findViewById(R.id.vendorName);
 		vendorAddressTextView = (TextView) findViewById(R.id.vendorAddress);
 		rewardListView = (ListView) findViewById(R.id.rewardlist);
@@ -113,12 +105,8 @@ public class VendorActivity extends Activity {
 	 */
 	private void setInfoFromNFCIntent(Intent intent) {
 		NdefMessage firstMessage = NFCActions.getFirstMessage(intent);
-		NdefRecord[] records = firstMessage.getRecords();
-		String firstString = new String(records[0].getPayload());
-		String secondString = new String(records[1].getPayload());
-		// Set title and address
-		vendorNameTextView.setText(firstString);
-		vendorAddressTextView.setText(secondString);
+		vendor = NFCActions.vendorFromNdef(firstMessage);
+		setInfoFromVendor(vendor);
 	}
 
 	/**

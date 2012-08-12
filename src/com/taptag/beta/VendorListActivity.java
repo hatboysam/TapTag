@@ -11,6 +11,7 @@ import com.taptag.beta.network.*;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -22,6 +23,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class VendorListActivity extends Activity {
@@ -33,7 +35,7 @@ public class VendorListActivity extends Activity {
 	private AbstractVendorAdapter adapter;
 	private ArrayAdapter<String> autoCompleteAdapter;
 	private Vendor[] allData;
-	private ProgressDialog loading;
+	private ProgressBar loadingSpinner;
 	// private Locator locator;
 	private boolean placesLoaded;
 	private Date lastPlacesLoad;
@@ -56,6 +58,7 @@ public class VendorListActivity extends Activity {
 
 		vendorListView = (ListView) findViewById(R.id.vendorList);
 		titleView = (TextView) findViewById(R.id.vendorListTitle);
+		loadingSpinner = (ProgressBar) findViewById(R.id.vendorListProgress);
 		placesLoaded = false;
 		lastPlacesLoad = new Date(0);
 	}
@@ -84,7 +87,7 @@ public class VendorListActivity extends Activity {
 		super.onWindowFocusChanged(hasFocus);
 		// Load all places in background
 		if (hasFocus && !placesLoaded && shouldLoadPlaces()) {
-			showLoadingDialog();
+			loadingSpinner.setVisibility(View.VISIBLE);
 			final Intent intent = getIntent();
 			Thread backgroundThread = new Thread(new Runnable() {
 				public void run() {
@@ -105,19 +108,6 @@ public class VendorListActivity extends Activity {
 		Double[] result = null; // = locator.getLatLong();
 		// Log.i("TapTag", result[0].toString() + ", " + result[1].toString());
 		return result;
-	}
-
-	/**
-	 * Display a loading dialog, for long operations
-	 */
-	public void showLoadingDialog() {
-		if (loading == null) {
-			loading = ProgressDialog.show(VendorListActivity.this, "TapTag",
-					"Loading Places...", true);
-			loading.setCancelable(true);
-		} else {
-			loading.show();
-		}
 	}
 
 	/**
@@ -222,7 +212,7 @@ public class VendorListActivity extends Activity {
 			VendorListActivity.this.configureAutoComplete();
 			VendorListActivity.this.configureOnClickListener();
 			adapter.notifyDataSetChanged();
-			loading.dismiss();
+			loadingSpinner.setVisibility(View.GONE);
 		}
 	}
 

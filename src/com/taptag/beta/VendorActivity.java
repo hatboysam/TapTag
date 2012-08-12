@@ -17,7 +17,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class VendorActivity extends Activity {
@@ -27,6 +29,7 @@ public class VendorActivity extends Activity {
 	private ListView rewardListView;
 	private TextView vendorNameTextView;
 	private TextView vendorAddressTextView;
+	private ProgressBar loadingSpinner;
 
 	private NfcAdapter nfcAdapter;
 	private PendingIntent nfcIntent;
@@ -34,7 +37,6 @@ public class VendorActivity extends Activity {
 	private Vendor vendor = null;
 	private Reward[] allRewards = new Reward[0];
 	private RewardAdapter adapter;
-	private ProgressDialog loading;
 	
 	private boolean rewardsLoaded;
 
@@ -46,6 +48,7 @@ public class VendorActivity extends Activity {
 		vendorNameTextView = (TextView) findViewById(R.id.vendorName);
 		vendorAddressTextView = (TextView) findViewById(R.id.vendorAddress);
 		rewardListView = (ListView) findViewById(R.id.rewardlist);
+		loadingSpinner = (ProgressBar) findViewById(R.id.vendorRewardProgress);
 
 		// Check for NFC
 		nfcIntent = PendingIntent.getActivity(this, 0, (new Intent(this, getClass())).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
@@ -85,7 +88,7 @@ public class VendorActivity extends Activity {
 		super.onWindowFocusChanged(hasFocus);
 		// Load all places in background
 		if (hasFocus && !rewardsLoaded) {
-			showLoadingDialog();
+			loadingSpinner.setVisibility(View.VISIBLE);
 			final Intent intent = getIntent();
 			Thread backgroundThread = new Thread(new Runnable() {
 				public void run() {
@@ -121,18 +124,6 @@ public class VendorActivity extends Activity {
 	}
 	
 	/**
-	 * Display a loading dialog, for long operations
-	 */
-	public void showLoadingDialog() {
-		if (loading == null) {
-			loading = ProgressDialog.show(VendorActivity.this, "TapTag", "Loading Rewards...", true);
-			loading.setCancelable(true);
-		} else {
-			loading.show();
-		}
-	}
-	
-	/**
 	 * Task to fetch the rewards for this Vendor
 	 * @author samstern
 	 */
@@ -149,7 +140,7 @@ public class VendorActivity extends Activity {
 		protected void onPostExecute(Void result) {
 			adapter = new RewardAdapter(VendorActivity.this, R.layout.rewardlistitem, allRewards);
 			rewardListView.setAdapter(adapter);
-			loading.dismiss();
+			loadingSpinner.setVisibility(View.GONE);
 		}	
 	}
 

@@ -51,6 +51,12 @@
         android:textSize="10pt" >
 
     </TextView>
+    
+    <ProgressBar
+        android:id="@+id/vendorRewardProgress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <ListView
         android:id="@+id/rewardlist"

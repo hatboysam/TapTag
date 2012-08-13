@@ -5,5 +5,12 @@
     <string name="app_name">TapTag</string>
     <color name="button_back">#00FFFFFF</color>
     <color name="grey_back">#4C4C4C</color>
+    
+    <string name="label_welcome">Welcome</string>
+    <string name="label_login">Login to continue</string>
+    <string name="button_login">Login through Facebook </string>
+    <string name="button_logout">Logout from TapTag</string>
+    <string name="button_post_feed">Post Feed</string>
+    <string name="button_send_request">Send Request</string>
 
 </resources>

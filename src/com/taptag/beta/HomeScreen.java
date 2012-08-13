@@ -1,16 +1,9 @@
 package com.taptag.beta;
 
 
-import com.facebook.android.DialogError;
-import com.facebook.android.Facebook;
-import com.facebook.android.Facebook.DialogListener;
-import com.facebook.android.FacebookError;
 import com.taptag.beta.R;
-
-
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,9 +11,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 public class HomeScreen extends Activity {
-	private Facebook facebook = new Facebook("467907829887006");
-	private SharedPreferences mPrefs;
-	private static final boolean USE_FACEBOOK = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -58,62 +48,5 @@ public class HomeScreen extends Activity {
 				HomeScreen.this.startActivity(toVendor);
 			}
 		});
-
-		/*
-		 * Get existing access_token if any
-		 */
-		mPrefs = getPreferences(MODE_PRIVATE);
-		String access_token = mPrefs.getString("access_token", null);
-		long expires = mPrefs.getLong("access_expires", 0);
-		if (access_token != null) {
-			facebook.setAccessToken(access_token);
-		}
-		if (expires != 0) {
-			facebook.setAccessExpires(expires);
-		}
-
-		/*
-		 * Only call authorize if the access_token has expired.
-		 */
-		if (USE_FACEBOOK && !facebook.isSessionValid()) {
-			facebook.authorize(this, new String[] {}, new DialogListener() {
-				public void onComplete(Bundle values) {
-					SharedPreferences.Editor editor = mPrefs.edit();
-					editor.putString("access_token", facebook.getAccessToken());
-					editor.putLong("access_expires",
-							facebook.getAccessExpires());
-					editor.commit();
-				}
-				public void onFacebookError(FacebookError error) {
-				}
-				public void onError(DialogError e) {
-				}
-				public void onCancel() {
-				}
-			});
-		}
-	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		facebook.authorizeCallback(requestCode, resultCode, data);
-		facebook.authorize(this, new String[] { "email" },
-		new DialogListener() {
-			public void onComplete(Bundle values) {
-			}
-			public void onFacebookError(FacebookError error) {
-			}
-			public void onError(DialogError e) {
-			}
-			public void onCancel() {
-			}
-		});
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		facebook.extendAccessTokenIfNeeded(this, null);
 	}
 }

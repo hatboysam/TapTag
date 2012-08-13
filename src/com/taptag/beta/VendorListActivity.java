@@ -11,6 +11,7 @@ import com.taptag.beta.network.*;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ public class VendorListActivity extends Activity {
 	private ArrayAdapter<String> autoCompleteAdapter;
 	private Vendor[] allData;
 	private ProgressBar loadingSpinner;
+	private SharedPreferences mPrefs;
 	// private Locator locator;
 	private boolean placesLoaded;
 	private Date lastPlacesLoad;
@@ -48,6 +50,7 @@ public class VendorListActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.vendorlist);
 		// locator = new Locator(this);
+		mPrefs = getSharedPreferences("TapTag", MODE_PRIVATE);
 
 		allData = new Vendor[] {
 				new Vendor("Pizza Palace", new TagAddress("140 East 14th Street", "New York", "NY", "10003")),
@@ -201,7 +204,7 @@ public class VendorListActivity extends Activity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			Log.i("TapTag", "Setting Adapter...");
-			allData = TapTagAPI.vendorsVisitedBy(201);
+			allData = TapTagAPI.vendorsVisitedBy(mPrefs.getInt("user_id", 0));
 			return null;
 		}
 

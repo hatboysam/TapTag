@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -30,6 +31,7 @@ public class VendorActivity extends Activity {
 	private TextView vendorNameTextView;
 	private TextView vendorAddressTextView;
 	private ProgressBar loadingSpinner;
+	private SharedPreferences mPrefs;
 
 	private NfcAdapter nfcAdapter;
 	private PendingIntent nfcIntent;
@@ -44,6 +46,7 @@ public class VendorActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.vendor);
+		mPrefs = getSharedPreferences("TapTag", MODE_PRIVATE);
 		
 		vendorNameTextView = (TextView) findViewById(R.id.vendorName);
 		vendorAddressTextView = (TextView) findViewById(R.id.vendorAddress);
@@ -131,7 +134,7 @@ public class VendorActivity extends Activity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			Reward[] rewards = TapTagAPI.progressByUserAndCompany(201, vendor.getCompanyId());
+			Reward[] rewards = TapTagAPI.progressByUserAndCompany(mPrefs.getInt("user_id", 0), vendor.getCompanyId());
 			VendorActivity.this.allRewards = rewards;
 			return null;
 		}

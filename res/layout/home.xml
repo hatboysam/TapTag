@@ -5,6 +5,16 @@
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
+    <TextView
+        android:id="@+id/loggedInLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="5dp"
+        android:textSize="10pt" >
+
+    </TextView>
+
     <TableLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -38,16 +48,16 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/myPlacesLabel"
-                android:gravity="center"
-                android:text="My Places"
-                android:textSize="10pt" >
-            </TextView>
-
-            <TextView
                 android:id="@+id/nearMeLabel"
                 android:gravity="center"
                 android:text="Near Me"
+                android:textSize="10pt" >
+            </TextView>
+            
+            <TextView
+                android:id="@+id/nearMeLabel"
+                android:gravity="center"
+                android:text="My Places"
                 android:textSize="10pt" >
             </TextView>
         </TableRow>

@@ -1,4 +1,4 @@
-package com.taptag.beta;
+package com.taptag.beta.facebook;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

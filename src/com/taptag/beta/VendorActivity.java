@@ -8,20 +8,17 @@ import com.taptag.beta.network.*;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class VendorActivity extends Activity {
 
@@ -113,6 +110,13 @@ public class VendorActivity extends Activity {
 		NdefMessage firstMessage = NFCActions.getFirstMessage(intent);
 		vendor = NFCActions.vendorFromNdef(firstMessage);
 		setInfoFromVendor(vendor);
+		Thread backgroundThread = new Thread(new Runnable() {
+			public void run() {
+				TapSubmitTask task = new TapSubmitTask();
+				task.execute(null, null);
+			}
+		});
+		backgroundThread.run();
 	}
 
 	/**
@@ -124,6 +128,14 @@ public class VendorActivity extends Activity {
 		// Set title and address
 		vendorNameTextView.setText(vendor.getName());
 		vendorAddressTextView.setText(vendor.getAddress().toString());
+	}
+	
+	/**
+	 * Make a Toast Message with "SHORT" Length
+	 * @param message
+	 */
+	private void toastShort(String message) {
+		Toast.makeText(VendorActivity.this, message, Toast.LENGTH_SHORT).show();
 	}
 	
 	/**
@@ -145,6 +157,34 @@ public class VendorActivity extends Activity {
 			rewardListView.setAdapter(adapter);
 			loadingSpinner.setVisibility(View.GONE);
 		}	
+	}
+	
+	/**
+	 * Task to submit a Tap for this Vendor by the logged in user
+	 * @author samstern
+	 */
+	public class TapSubmitTask extends AsyncTask<Void, Void, Boolean> {
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			Integer userId = mPrefs.getInt("user_id", -1);
+			if (userId > 0) {
+				boolean success = TapTagAPI.submitTap(userId, vendor);
+				return (Boolean) success;
+			} else {
+				return false;
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if (result) {
+				toastShort("Tap Submitted");
+			} else {
+				toastShort("Tap Failed");
+			}
+		}
+
 	}
 
 }

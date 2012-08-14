@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-public class HomeScreen extends Activity {
+public class HomeScreenActivity extends Activity {
 
 	private TextView loggedInLabel;
 	private SharedPreferences mPrefs;
@@ -32,10 +32,10 @@ public class HomeScreen extends Activity {
 		ImageButton toVendors = (ImageButton) findViewById(R.id.myPlacesButton);
 		toVendors.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent toVendorList = new Intent(HomeScreen.this,
+				Intent toVendorList = new Intent(HomeScreenActivity.this,
 						VendorListActivity.class);
 				toVendorList.setAction(VendorListActivity.IN_ORDER);
-				HomeScreen.this.startActivity(toVendorList);
+				HomeScreenActivity.this.startActivity(toVendorList);
 			}
 		});
 
@@ -43,10 +43,10 @@ public class HomeScreen extends Activity {
 		ImageButton toNearbyVendors = (ImageButton) findViewById(R.id.nearMeButton);
 		toNearbyVendors.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent toVendorList = new Intent(HomeScreen.this,
+				Intent toVendorList = new Intent(HomeScreenActivity.this,
 						VendorListActivity.class);
 				toVendorList.setAction(VendorListActivity.NEAR_ME);
-				HomeScreen.this.startActivity(toVendorList);
+				HomeScreenActivity.this.startActivity(toVendorList);
 			}
 		});
 
@@ -54,9 +54,9 @@ public class HomeScreen extends Activity {
 		Button toWrite = (Button) findViewById(R.id.writeButton);
 		toWrite.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				Intent toVendor = new Intent(HomeScreen.this,
+				Intent toVendor = new Intent(HomeScreenActivity.this,
 						TapTagActivity.class);
-				HomeScreen.this.startActivity(toVendor);
+				HomeScreenActivity.this.startActivity(toVendor);
 			}
 		});
 	}

@@ -104,7 +104,7 @@ public class FacebookLogInActivity extends Activity {
 	}
 
 	public void continueToHomeScreen() {
-		Intent toHomeScreen = new Intent(FacebookLogInActivity.this, HomeScreen.class);
+		Intent toHomeScreen = new Intent(FacebookLogInActivity.this, HomeScreenActivity.class);
 		FacebookLogInActivity.this.startActivity(toHomeScreen);
 	}
 

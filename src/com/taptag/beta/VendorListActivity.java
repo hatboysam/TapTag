@@ -8,11 +8,8 @@ import com.taptag.beta.vendor.AlphabeticalVendorAdapter;
 import com.taptag.beta.location.TagAddress;
 import com.taptag.beta.network.*;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.opengl.Visibility;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -27,7 +24,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class VendorListActivity extends Activity {
+public class VendorListActivity extends NetworkActivity {
 
 	private TextView titleView;
 	private ListView vendorListView;

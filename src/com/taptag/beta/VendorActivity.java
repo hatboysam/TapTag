@@ -6,7 +6,6 @@ import com.taptag.beta.reward.RewardAdapter;
 import com.taptag.beta.vendor.Vendor;
 import com.taptag.beta.network.*;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,7 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class VendorActivity extends Activity {
+public class VendorActivity extends NetworkActivity {
 
 	public static final String VIEW_VENDOR = "View Vendor";
 
@@ -89,7 +88,6 @@ public class VendorActivity extends Activity {
 		// Load all places in background
 		if (hasFocus && !rewardsLoaded) {
 			loadingSpinner.setVisibility(View.VISIBLE);
-			final Intent intent = getIntent();
 			Thread backgroundThread = new Thread(new Runnable() {
 				public void run() {
 					RewardsFetchTask task = new RewardsFetchTask();

@@ -14,6 +14,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.AsyncTask;
@@ -39,6 +40,7 @@ public class TapTagActivity extends Activity {
 	private IntentFilter[] writeTagFilters;
 	private IntentFilter[] ndefExchangeFilters;
 	private Vendor toWrite;
+	private Tag recentTag;
 	private Vendor[] allData;
 	private ProgressDialog loading;
 	private ListView writeList;
@@ -98,12 +100,9 @@ public class TapTagActivity extends Activity {
 		// Writing mode
 		if (writeMode && NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
 			Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-			boolean writeResult = NFCActions.writeTag(detectedTag, toWrite);
-			if (writeResult) {
-				toastShort("Tag Written: " + toWrite.getName());
-			} else {
-				toastShort("Tag Not Written");
-			}
+			this.recentTag = detectedTag;
+			WriteTagTask writeTagTask = new WriteTagTask();
+			writeTagTask.execute(null, null);
 		}
 	}
 
@@ -212,7 +211,7 @@ public class TapTagActivity extends Activity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			allData = TapTagAPI.vendorsVisitedBy(201);
+			allData = TapTagAPI.vendorsVisitedBy(402);
 			return null;
 		}
 
@@ -226,5 +225,25 @@ public class TapTagActivity extends Activity {
 			listAdapter.notifyDataSetChanged();
 			loading.dismiss();
 		}
+	}
+	
+	public class WriteTagTask extends AsyncTask<Void, Void, Boolean> {
+
+		@Override
+		protected Boolean doInBackground(Void... messages) {
+			Tag detectedTag = TapTagActivity.this.recentTag;
+			boolean writeResult = NFCActions.writeTag(detectedTag, toWrite);
+			return writeResult;
+		}
+		
+		@Override
+		protected void onPostExecute(Boolean writeResult) {
+			if (writeResult) {
+				toastShort("Tag Written: " + toWrite.getName());
+			} else {
+				toastShort("Tag Not Written");
+			}
+		}
+		
 	}
 }

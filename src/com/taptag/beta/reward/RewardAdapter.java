@@ -51,7 +51,7 @@ public class RewardAdapter extends ArrayAdapter<Reward> {
 		ProgressBar rewardProgress = (ProgressBar) row.findViewById(R.id.rewardListProgress);
 
 		Reward reward = data[position];
-		titleView.setText(reward.getName());
+		titleView.setText(reward.getName() + " (" + reward.getProgressString() + ")");
 		descriptionView.setText(reward.getDescription());
 		rewardProgress.setMax(reward.getTotal());
 		rewardProgress.setProgress(reward.getProgress());

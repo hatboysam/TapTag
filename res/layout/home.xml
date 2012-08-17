@@ -12,7 +12,6 @@
         android:gravity="center"
         android:padding="5dp"
         android:textSize="10pt" >
-
     </TextView>
 
     <TableLayout
@@ -50,14 +49,14 @@
             <TextView
                 android:id="@+id/nearMeLabel"
                 android:gravity="center"
-                android:text="Near Me"
+                android:text="My Places"
                 android:textSize="10pt" >
             </TextView>
-            
+
             <TextView
                 android:id="@+id/nearMeLabel"
                 android:gravity="center"
-                android:text="My Places"
+                android:text="Near Me"
                 android:textSize="10pt" >
             </TextView>
         </TableRow>

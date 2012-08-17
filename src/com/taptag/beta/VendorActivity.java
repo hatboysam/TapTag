@@ -1,6 +1,7 @@
 package com.taptag.beta;
 
 import com.taptag.beta.nfc.NFCActions;
+import com.taptag.beta.response.TapSubmitResponse;
 import com.taptag.beta.reward.Reward;
 import com.taptag.beta.reward.RewardAdapter;
 import com.taptag.beta.vendor.Vendor;
@@ -167,8 +168,8 @@ public class VendorActivity extends NetworkActivity {
 		protected Boolean doInBackground(Void... params) {
 			Integer userId = mPrefs.getInt("user_id", -1);
 			if (userId > 0) {
-				boolean success = TapTagAPI.submitTap(userId, vendor);
-				return (Boolean) success;
+				TapSubmitResponse tsr = TapTagAPI.submitTap(userId, vendor);
+				return tsr.success();
 			} else {
 				return false;
 			}

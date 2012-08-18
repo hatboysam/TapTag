@@ -2,6 +2,7 @@ package com.taptag.beta;
 
 
 import com.taptag.beta.R;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -47,6 +48,16 @@ public class HomeScreenActivity extends Activity {
 						VendorListActivity.class);
 				toVendorList.setAction(VendorListActivity.NEAR_ME);
 				HomeScreenActivity.this.startActivity(toVendorList);
+			}
+		});
+		
+		// Set the click behavior for the Rewards button
+		ImageButton toRewards = (ImageButton) findViewById(R.id.rewardsButton);
+		toRewards.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				Intent toRewards = new Intent(HomeScreenActivity.this,
+						RewardsActivity.class);
+				HomeScreenActivity.this.startActivity(toRewards);
 			}
 		});
 

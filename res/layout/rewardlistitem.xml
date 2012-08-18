@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Reward #1"
-        android:textSize="10pt" />
+        android:textSize="8pt" />
     
     <TextView
         android:id="@+id/rewardListDescription"

@@ -27,6 +27,7 @@ public class FacebookLogInActivity extends Activity {
 	private SharedPreferences mPrefs;
 	private TextView mWelcomeLabel;
 	private Button mLoginButton;
+	private Button mSettingsButton;
 	private static final String[] PERMISSIONS = { "email" };
 
 	@Override
@@ -36,36 +37,56 @@ public class FacebookLogInActivity extends Activity {
 
 		mPrefs = getSharedPreferences("TapTag", MODE_PRIVATE);
 		Integer userId = mPrefs.getInt("user_id", -1);
+
+		mWelcomeLabel = (TextView) findViewById(R.id.welcomeText);
+		mLoginButton = (Button) findViewById(R.id.loginButton);
+		mSettingsButton = (Button) findViewById(R.id.settingsButton);
+
+		// Facebook properties
+		mAsyncRunner = new AsyncFacebookRunner(facebook);
+		mHandler = new Handler();
+		// Get existing saved session information
+		String access_token = mPrefs.getString("access_token", null);
+		long expires = mPrefs.getLong("access_expires", 0);
+		if (access_token != null) {
+			facebook.setAccessToken(access_token);
+		}
+		if (expires != 0) {
+			facebook.setAccessExpires(expires);
+		}
+		// Change the button text and welcome label
+		configureUIState();
+
+		if (getIntent().hasExtra("Log out from TapTag")) {
+			Boolean isLogOut = (Boolean) getIntent().getExtras().get(
+					"Log out from TapTag");
+			if (isLogOut.booleanValue() == true) {
+				logOut();
+			}
+		}
+
+		// Button log-in
+		mSettingsButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				goToSettings();
+			}
+		});
+
+		// Button settings
+		mLoginButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (!facebook.isSessionValid()) {
+					logIn();
+				} else {
+					logOut();
+				}
+			}
+		});
+
 		if (userId > 0) {
 			continueToHomeScreen();
-		} else {
-			mWelcomeLabel = (TextView) findViewById(R.id.welcomeText);
-			mLoginButton = (Button) findViewById(R.id.loginButton);
-			//Facebook properties
-			mAsyncRunner = new AsyncFacebookRunner(facebook);
-			mHandler = new Handler();
-			//Get existing saved session information
-			String access_token = mPrefs.getString("access_token", null);
-			long expires = mPrefs.getLong("access_expires", 0);
-			if (access_token != null) {
-				facebook.setAccessToken(access_token);
-			}
-			if (expires != 0) {
-				facebook.setAccessExpires(expires);
-			}
-			//Change the button text and welcome label
-			configureUIState();
-			//Button behavior
-			mLoginButton.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					if (!facebook.isSessionValid()) {
-						logIn();
-					} else {
-						logOut();
-					}
-				}
-			});
 		}
 	}
 
@@ -78,11 +99,11 @@ public class FacebookLogInActivity extends Activity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		//Extend the session information if it is needed
+		// Extend the session information if it is needed
 		if ((facebook != null) && facebook.isSessionValid()) {
 			facebook.extendAccessTokenIfNeeded(this, null);
 		}
-		//Check for user and then continue
+		// Check for user and then continue
 		Integer userId = mPrefs.getInt("user_id", -1);
 		if (userId > 0) {
 			continueToHomeScreen();
@@ -95,7 +116,7 @@ public class FacebookLogInActivity extends Activity {
 		if (facebook.isSessionValid()) {
 			mWelcomeLabel.setText(R.string.label_welcome);
 			mLoginButton.setText(R.string.button_logout);
-			//Get the user's data
+			// Get the user's data
 			requestUserData();
 		} else {
 			mWelcomeLabel.setText(R.string.label_login);
@@ -104,60 +125,74 @@ public class FacebookLogInActivity extends Activity {
 	}
 
 	public void continueToHomeScreen() {
-		Intent toHomeScreen = new Intent(FacebookLogInActivity.this, HomeScreenActivity.class);
+		Intent toHomeScreen = new Intent(FacebookLogInActivity.this,
+				HomeScreenActivity.class);
 		FacebookLogInActivity.this.startActivity(toHomeScreen);
 	}
 
 	public void logIn() {
-		facebook.authorize(FacebookLogInActivity.this, PERMISSIONS, new DialogListener() {
-			@Override
-			public void onComplete(Bundle values) {
-				//Set the logged in UI
-				mWelcomeLabel.setText(R.string.label_welcome);
-				mLoginButton.setText(R.string.button_logout);
-				//Save session data
-				SharedPreferences.Editor editor = mPrefs.edit();
-				editor.putString("access_token", facebook.getAccessToken());
-				editor.putLong("access_expires", facebook.getAccessExpires());
-				editor.commit();
-				//Get the user's data
-				requestUserData();
-			}
+		facebook.authorize(FacebookLogInActivity.this, PERMISSIONS,
+				new DialogListener() {
+					@Override
+					public void onComplete(Bundle values) {
+						// Set the logged in UI
+						mWelcomeLabel.setText(R.string.label_welcome);
+						mLoginButton.setText(R.string.button_logout);
+						// Save session data
+						SharedPreferences.Editor editor = mPrefs.edit();
+						editor.putString("access_token",
+								facebook.getAccessToken());
+						editor.putLong("access_expires",
+								facebook.getAccessExpires());
+						editor.commit();
+						// Get the user's data
+						requestUserData();
+					}
 
-			@Override
-			public void onFacebookError(FacebookError e) {
-			}
-			@Override
-			public void onError(DialogError e) {
-			}
-			@Override
-			public void onCancel() {
-			}
-		});
+					@Override
+					public void onFacebookError(FacebookError e) {
+					}
+
+					@Override
+					public void onError(DialogError e) {
+					}
+
+					@Override
+					public void onCancel() {
+					}
+				});
 	}
 
 	public void logOut() {
-		//Logging out
-		mAsyncRunner.logout(FacebookLogInActivity.this, new BaseRequestListener() {
-			@Override
-			public void onComplete(String response, Object state) {
-				//callback should be run in the original thread, not the background thread
-				mHandler.post(new Runnable() {
+		// Logging out
+		mAsyncRunner.logout(FacebookLogInActivity.this,
+				new BaseRequestListener() {
 					@Override
-					public void run() {
-						//Set the logged out UI
-						mWelcomeLabel.setText(R.string.label_login);
-						mLoginButton.setText(R.string.button_login);
-						//Clear the token information
-						SharedPreferences.Editor editor = mPrefs.edit();
-						editor.putString("access_token", null);
-						editor.putLong("access_expires", 0);
-						editor.remove("user_id");
-						editor.commit();
+					public void onComplete(String response, Object state) {
+						// callback should be run in the original thread, not
+						// the background thread
+						mHandler.post(new Runnable() {
+							@Override
+							public void run() {
+								// Set the logged out UI
+								mWelcomeLabel.setText(R.string.label_login);
+								mLoginButton.setText(R.string.button_login);
+								// Clear the token information
+								SharedPreferences.Editor editor = mPrefs.edit();
+								editor.putString("access_token", null);
+								editor.putLong("access_expires", 0);
+								editor.remove("user_id");
+								editor.commit();
+							}
+						});
 					}
 				});
-			}
-		});
+	}
+
+	public void goToSettings() {
+		Intent toSettings = new Intent(FacebookLogInActivity.this,
+				SettingsActivity.class);
+		FacebookLogInActivity.this.startActivity(toSettings);
 	}
 
 	public void requestUserData() {
@@ -168,16 +203,22 @@ public class FacebookLogInActivity extends Activity {
 		mAsyncRunner.request("me", params, new BaseRequestListener() {
 			@Override
 			public void onComplete(final String response, final Object state) {
-				FacebookUserInfo facebookUserInfo = TapTagAPI.userInfoFromFacebook(response);
-				UserFetchResponse userFetchResponse = TapTagAPI.fetchUser(facebookUserInfo);
+				FacebookUserInfo facebookUserInfo = TapTagAPI
+						.userInfoFromFacebook(response);
+				UserFetchResponse userFetchResponse = TapTagAPI
+						.fetchUser(facebookUserInfo);
 				if (!userFetchResponse.hasError()) {
 					SharedPreferences.Editor editor = mPrefs.edit();
 					editor.putInt("user_id", userFetchResponse.getId());
-					editor.putString("user_name", facebookUserInfo.getFirst_name() + " " + facebookUserInfo.getLast_name());
+					editor.putString("user_name",
+							facebookUserInfo.getFirst_name() + " "
+									+ facebookUserInfo.getLast_name());
 					editor.commit();
 					continueToHomeScreen();
 				} else {
-					final String welcomeText = "Status: " + userFetchResponse.getStatus() + ", ID: " + Integer.toString(userFetchResponse.getId());
+					final String welcomeText = "Status: "
+							+ userFetchResponse.getStatus() + ", ID: "
+							+ Integer.toString(userFetchResponse.getId());
 					mHandler.post(new Runnable() {
 						@Override
 						public void run() {

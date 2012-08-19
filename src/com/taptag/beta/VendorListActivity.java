@@ -5,11 +5,16 @@ import com.taptag.beta.vendor.AbstractVendorAdapter;
 import com.taptag.beta.vendor.ProximityVendorAdapter;
 import com.taptag.beta.vendor.Vendor;
 import com.taptag.beta.vendor.AlphabeticalVendorAdapter;
+import com.taptag.beta.location.LatLong;
 import com.taptag.beta.location.TagAddress;
 import com.taptag.beta.network.*;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -35,9 +40,13 @@ public class VendorListActivity extends NetworkActivity {
 	private Vendor[] allData;
 	private ProgressBar loadingSpinner;
 	private SharedPreferences mPrefs;
-	// private Locator locator;
 	private boolean placesLoaded;
 	private Date lastPlacesLoad;
+	
+	private LocationManager locationManager;
+	private LocationListener locationListener;
+	private Location recentLocation;
+	private String mode;
 
 	public static final String NEAR_ME = "Places Nearby";
 	public static final String IN_ORDER = "My Places";
@@ -46,16 +55,12 @@ public class VendorListActivity extends NetworkActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.vendorlist);
-		// locator = new Locator(this);
 		mPrefs = getSharedPreferences("TapTag", MODE_PRIVATE);
 
-		allData = new Vendor[] {
-				new Vendor("Pizza Palace", new TagAddress("140 East 14th Street", "New York", "NY", "10003")),
-				new Vendor("Dunkin Donuts", new TagAddress("425 Corte Sur","Novato", "CA", "94949")),
-				new Vendor("Chipotle", new TagAddress("3706 Locust Walk","Philadelphia", "PA", "19104")),
-				new Vendor("Duane Reade", new TagAddress("1147 Barbara Drive","Cherry Hill", "NJ", "08003")),
-				new Vendor("Varun's Curry Emporium", new TagAddress("10475 Crosspoint Boulevard", "Indianapolis", "IN","46256")) };
-
+		allData = new Vendor[0];
+		
+		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+		
 		vendorListView = (ListView) findViewById(R.id.vendorList);
 		titleView = (TextView) findViewById(R.id.vendorListTitle);
 		loadingSpinner = (ProgressBar) findViewById(R.id.vendorListProgress);
@@ -66,20 +71,17 @@ public class VendorListActivity extends NetworkActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		// locator.startLocating();
 		placesLoaded = false;
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		// locator.stopLocating();
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		// locator.stopLocating();
 	}
 
 	@Override
@@ -100,17 +102,6 @@ public class VendorListActivity extends NetworkActivity {
 	}
 
 	/**
-	 * Get the user's location
-	 * 
-	 * @return
-	 */
-	private Double[] getLocation() {
-		Double[] result = null; // = locator.getLatLong();
-		// Log.i("TapTag", result[0].toString() + ", " + result[1].toString());
-		return result;
-	}
-
-	/**
 	 * Load the list contents based on the intent type, and set the window title
 	 * 
 	 * @param intent
@@ -118,19 +109,17 @@ public class VendorListActivity extends NetworkActivity {
 	public void configureByIntent(Intent intent) {
 		String action = intent.getAction();
 		titleView.setText(action);
-		Log.i("TapTag", "Making Adapter...");
+		mode = action;
 		if (NEAR_ME.equals(action)) {
 			Log.i("TapTag", "PLACES NEAR ME");
-			adapter = new ProximityVendorAdapter(VendorListActivity.this,
-					R.layout.vendorlistitem, R.id.vendorListItemName, allData,
-					getLocation(), 10.0);
+			setupLocationListener();
+			getRecentLocation();
 		} else {
 			Log.i("TapTag", "PLACES IN ORDER");
-			adapter = new AlphabeticalVendorAdapter(VendorListActivity.this,
-					R.layout.vendorlistitem, R.id.vendorListItemName, allData);
+			LoadPlacesTask loadPlacesTask = new LoadPlacesTask();
+			loadPlacesTask.execute(null, null);
 		}
-		LoadPlacesTask loadPlacesTask = new LoadPlacesTask();
-		loadPlacesTask.execute(null, null, null);
+
 	}
 
 	/**
@@ -188,7 +177,7 @@ public class VendorListActivity extends NetworkActivity {
 	}
 
 	/**
-	 * Asynchronously populate the ListView. All beahvior in onPostExecute
+	 * Asynchronously populate the ListView. All behavior in onPostExecute
 	 * because doInBackground can't access the UI thread
 	 */
 	public class LoadPlacesTask extends AsyncTask<Void, Void, Void> {
@@ -196,12 +185,20 @@ public class VendorListActivity extends NetworkActivity {
 		@Override
 		protected void onPreExecute() {
 			lastPlacesLoad = new Date();
+			if (NEAR_ME.equals(mode)) {
+				adapter = new ProximityVendorAdapter(VendorListActivity.this, R.layout.vendorlistitem, R.id.vendorListItemName, allData, getLatLong());
+			} else {
+				adapter = new AlphabeticalVendorAdapter(VendorListActivity.this, R.layout.vendorlistitem, R.id.vendorListItemName, allData);
+			}
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			Log.i("TapTag", "Setting Adapter...");
-			allData = TapTagAPI.vendorsVisitedBy(mPrefs.getInt("user_id", 0));
+			if (NEAR_ME.equals(mode)) {
+				allData = TapTagAPI.vendorsNear(getLatLong(), 500);
+			} else {
+				allData = TapTagAPI.vendorsVisitedBy(mPrefs.getInt("user_id", 0));
+			}
 			return null;
 		}
 
@@ -213,6 +210,42 @@ public class VendorListActivity extends NetworkActivity {
 			VendorListActivity.this.configureOnClickListener();
 			adapter.notifyDataSetChanged();
 			loadingSpinner.setVisibility(View.GONE);
+		}
+	}
+	
+	//=========================================================
+	//========================LOCATION=========================
+	//=========================================================
+	
+	public void setupLocationListener() {
+		locationListener = new LocationListener() {
+			@Override
+			public void onLocationChanged(Location location) {
+				recentLocation = location;
+				LoadPlacesTask loadPlacesTask = new LoadPlacesTask();
+				loadPlacesTask.execute(null, null);
+			}
+			@Override
+			public void onProviderDisabled(String provider) {
+			}
+			@Override
+			public void onProviderEnabled(String provider) {
+			}
+			@Override
+			public void onStatusChanged(String provider, int status, Bundle extras) {	
+			}
+		};
+	}
+ 	
+	public void getRecentLocation() {
+		locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null);
+	}
+	
+	public LatLong getLatLong() {
+		if (recentLocation == null) {
+			return new LatLong();
+		} else {
+			return new LatLong(recentLocation.getLatitude(), recentLocation.getLongitude());
 		}
 	}
 

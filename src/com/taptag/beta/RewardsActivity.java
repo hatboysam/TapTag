@@ -95,7 +95,7 @@ public class RewardsActivity extends Activity {
 				toUpdate = inProgressFragment;
 			}
 			if (COMPLETED.equals(type)) {
-				//TODO
+				rewards = TapTagAPI.completedByUser(mPrefs.getInt("user_id", -1));
 				toUpdate = completedFragment;
 			}
 			if (NEARBY.equals(type)) {

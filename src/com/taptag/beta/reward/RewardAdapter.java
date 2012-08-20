@@ -54,7 +54,7 @@ public class RewardAdapter extends ArrayAdapter<Reward> {
 		titleView.setText(reward.getName() + " (" + reward.getProgressString() + ")");
 		descriptionView.setText(reward.getDescription());
 		rewardProgress.setMax(reward.getTotal());
-		rewardProgress.setProgress(reward.getProgress());
+		rewardProgress.setProgress(reward.getProgressBounded());
 
 		return row;
 	}

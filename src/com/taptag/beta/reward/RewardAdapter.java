@@ -1,5 +1,6 @@
 package com.taptag.beta.reward;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.taptag.beta.R;
@@ -61,6 +62,47 @@ public class RewardAdapter extends ArrayAdapter<Reward> {
 	
 	public void replaceAllData(Reward[] data) {
 		this.data = data;
+	}
+	
+	/**
+	 * Filter rewards for the In Progress display.  Rewards should only be shown
+	 * if they have not been completed or if they are repeating rewards.
+	 * Rewards in progress should not be shown if they are expired.  
+	 * A repeating reward that has already been completed should only show its progress on the current
+	 * "cycle" of completion.
+	 * @param toFilter
+	 * @return
+	 */
+	public static Reward[] filterInProgress(Reward[] toFilter) {
+		ArrayList<Reward> result = new ArrayList<Reward>();
+		for (Reward r : toFilter) {
+			if (r.getProgress() >= r.getTotal()) {
+				if (r.getRepeats()) {
+					int newProgress = r.getProgress() % r.getTotal();
+					r.setProgress(newProgress);
+					result.add(r);
+				}
+			} else {
+				if (!r.isExpired()) {
+					result.add(r);
+				}
+			}
+		}		
+		return result.toArray(new Reward[result.size()]);
+	}
+	
+	/**
+	 * Determine if there are some completed rewards in an array
+	 * @param toFilter
+	 * @return
+	 */
+	public static boolean hasCompleted(Reward[] toFilter) {
+		for (Reward r : toFilter) {
+			if (r.getProgress() >= r.getTotal()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

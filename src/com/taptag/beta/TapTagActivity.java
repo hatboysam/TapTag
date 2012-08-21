@@ -211,7 +211,7 @@ public class TapTagActivity extends Activity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			allData = TapTagAPI.vendorsVisitedBy(402);
+			allData = TapTagAPI.allVendors();
 			return null;
 		}
 

@@ -13,6 +13,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,13 +28,11 @@ public class RewardsActivity extends Activity {
 	public static String COMPLETED = "Completed";
 	public static String NEARBY = "Nearby";
 	
-	private Reward[] completedRewards;
-	private Reward[] inProgressRewards;
-	private Reward[] nearbyRewards;
-	
 	private ListFragment completedFragment;
 	private ListFragment inProgressFragment;
 	private ListFragment nearbyFragment;
+	
+	private ActionBar actionBar;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -42,7 +41,7 @@ public class RewardsActivity extends Activity {
 		
 		mPrefs = getSharedPreferences("TapTag", MODE_PRIVATE);
 		
-		ActionBar actionBar = getActionBar();
+		actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		
 		ActionBar.Tab inProgressTab = actionBar.newTab().setText(IN_PROGRESS);
@@ -62,6 +61,16 @@ public class RewardsActivity extends Activity {
 		actionBar.addTab(nearbyTab);
 		
 		setupLists();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		if (COMPLETED.equals(action)) {
+			actionBar.setSelectedNavigationItem(1);
+		}
 	}
 	
 	public void setupLists() {
@@ -92,10 +101,11 @@ public class RewardsActivity extends Activity {
 			Reward[] rewards = new Reward[0];
 			if (IN_PROGRESS.equals(type)) {
 				rewards = TapTagAPI.progressByUser(mPrefs.getInt("user_id", -1));
+				rewards = RewardAdapter.filterInProgress(rewards);
 				toUpdate = inProgressFragment;
 			}
 			if (COMPLETED.equals(type)) {
-				//TODO
+				rewards = TapTagAPI.completedByUser(mPrefs.getInt("user_id", -1));
 				toUpdate = completedFragment;
 			}
 			if (NEARBY.equals(type)) {

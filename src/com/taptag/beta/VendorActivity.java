@@ -7,7 +7,9 @@ import com.taptag.beta.reward.RewardAdapter;
 import com.taptag.beta.vendor.Vendor;
 import com.taptag.beta.network.*;
 
+import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.nfc.NdefMessage;
@@ -36,6 +38,8 @@ public class VendorActivity extends NetworkActivity {
 	private Vendor vendor = null;
 	private Reward[] allRewards = new Reward[0];
 	private RewardAdapter adapter;
+	private boolean hasCompleted;
+	private AlertDialog ad;
 	
 	private boolean rewardsLoaded;
 
@@ -130,6 +134,37 @@ public class VendorActivity extends NetworkActivity {
 	}
 	
 	/**
+	 * Show a message if a user has completed rewards
+	 */
+	private void showCompletedDialog() {
+		ad = (new AlertDialog.Builder(VendorActivity.this)).create();
+		ad.setTitle("Reward Completed");
+		ad.setMessage("Congratulations!  You can now redeem a reward at this location");
+		ad.setButton(AlertDialog.BUTTON_POSITIVE, "See Rewards", new DialogInterface.OnClickListener() {	
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				goToRewards();			
+			}
+		});
+		ad.setButton(AlertDialog.BUTTON_NEGATIVE, "Maybe Later", new DialogInterface.OnClickListener() {	
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				ad.dismiss();		
+			}
+		});
+		ad.show();
+	}
+	
+	/**
+	 * Launch an Intent to the Rewards activity
+	 */
+	public void goToRewards() {
+		Intent toRewards = new Intent(VendorActivity.this, RewardsActivity.class);
+		toRewards.setAction(RewardsActivity.COMPLETED);
+		VendorActivity.this.startActivity(toRewards);
+	}
+	
+	/**
 	 * Make a Toast Message with "SHORT" Length
 	 * @param message
 	 */
@@ -146,6 +181,8 @@ public class VendorActivity extends NetworkActivity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			Reward[] rewards = TapTagAPI.progressByUserAndCompany(mPrefs.getInt("user_id", 0), vendor.getCompanyId());
+			hasCompleted = RewardAdapter.hasCompleted(rewards);
+			rewards = RewardAdapter.filterInProgress(rewards);
 			VendorActivity.this.allRewards = rewards;
 			return null;
 		}
@@ -155,6 +192,9 @@ public class VendorActivity extends NetworkActivity {
 			adapter = new RewardAdapter(VendorActivity.this, R.layout.rewardlistitem, allRewards);
 			rewardListView.setAdapter(adapter);
 			loadingSpinner.setVisibility(View.GONE);
+			if (hasCompleted) {
+				showCompletedDialog();
+			}
 		}	
 	}
 	

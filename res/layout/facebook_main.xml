@@ -4,31 +4,138 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="20dp" />
-
     <TextView
-        android:id="@+id/welcomeText"
+        android:id="@+id/signupError"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
+        android:background="@color/error_red_back"
         android:gravity="center_vertical|center_horizontal"
-        android:text="@string/label_login" />
-
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="50dp" />
+        android:padding="5dp"
+        android:text="An error has occurred, try again."
+        android:textColor="@color/error_red_text"
+        android:textSize="10pt" />
 
     <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical|center_horizontal" >
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:padding="15dp"
+        android:weightSum="10" >
 
-        <Button
-            android:id="@+id/loginButton"
-            android:layout_width="wrap_content"
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/button_login" />
+            android:layout_marginBottom="10dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Login"
+            android:textSize="10pt" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/loginButton"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/facebook"
+                android:padding="0dp" />
+
+            <ProgressBar
+                android:id="@+id/facebookSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Sign Up"
+            android:textSize="10pt" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="vertical" >
+
+            <EditText
+                android:id="@+id/signupFirstName"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="-15dp"
+                android:layout_weight="1"
+                android:background="@drawable/rounded"
+                android:cursorVisible="true"
+                android:ems="10"
+                android:hint="First name"
+                android:paddingBottom="20dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:singleLine="true"
+                android:textColor="@color/black"
+                android:textCursorDrawable="@null" >
+
+            </EditText>
+
+            <EditText
+                android:id="@+id/signupLastName"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/white"
+                android:cursorVisible="true"
+                android:ems="10"
+                android:hint="Last name"
+                android:paddingBottom="15dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="15dp"
+                android:singleLine="true"
+                android:textColor="@color/black"
+                android:textCursorDrawable="@null" />
+
+            <EditText
+                android:id="@+id/signupEmail"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-15dp"
+                android:layout_weight="1"
+                android:background="@drawable/rounded"
+                android:ems="10"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="20dp"
+                android:singleLine="true"
+                android:textColor="@color/black"
+                android:textCursorDrawable="@null" />
+
+            <Button
+                android:id="@+id/signupButton"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/greyrounded"
+                android:text="Sign Up for TapTag" />
+
+            <ProgressBar
+                android:id="@+id/signupSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

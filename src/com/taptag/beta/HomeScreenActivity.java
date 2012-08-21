@@ -83,7 +83,7 @@ public class HomeScreenActivity extends Activity {
 	}
 	
 	public void goToSettings() {
-		Intent toSettings = new Intent(HomeScreenActivity.this,
+		Intent toSettings = new Intent(HomeScreenActivity.this, 
 				Settings.class);
 		HomeScreenActivity.this.startActivity(toSettings);
 	}

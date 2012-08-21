@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="user settings">
-    <PreferenceCategory android:title="facebook">
-        <CheckBoxPreference
-          android:title="Log Out From TapTag "
-          android:defaultValue="false"
-          android:key="logOutFromFaceBook" />
-        <ListPreference android:dialogTitle="About Us"/>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Settings" >
+
+    <PreferenceCategory android:title="Account" >
+        <Preference
+            android:key="logOut"
+            android:title="Log Out" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="About" >
+        <Preference
+            android:key="aboutUs"
+            android:title="About Us" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

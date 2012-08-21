@@ -27,7 +27,6 @@ public class FacebookLogInActivity extends Activity {
 	private SharedPreferences mPrefs;
 	private TextView mWelcomeLabel;
 	private Button mLoginButton;
-	private Button mSettingsButton;
 	private static final String[] PERMISSIONS = { "email" };
 
 	@Override
@@ -40,7 +39,6 @@ public class FacebookLogInActivity extends Activity {
 
 		mWelcomeLabel = (TextView) findViewById(R.id.welcomeText);
 		mLoginButton = (Button) findViewById(R.id.loginButton);
-		mSettingsButton = (Button) findViewById(R.id.settingsButton);
 
 		// Facebook properties
 		mAsyncRunner = new AsyncFacebookRunner(facebook);
@@ -48,6 +46,7 @@ public class FacebookLogInActivity extends Activity {
 		// Get existing saved session information
 		String access_token = mPrefs.getString("access_token", null);
 		long expires = mPrefs.getLong("access_expires", 0);
+
 		if (access_token != null) {
 			facebook.setAccessToken(access_token);
 		}
@@ -57,21 +56,13 @@ public class FacebookLogInActivity extends Activity {
 		// Change the button text and welcome label
 		configureUIState();
 
-		if (getIntent().hasExtra("Log out from TapTag")) {
-			Boolean isLogOut = (Boolean) getIntent().getExtras().get(
-					"Log out from TapTag");
+		if (getIntent().hasExtra("Log out")) {
+			Boolean isLogOut = (Boolean) getIntent().getExtras().get("Log out");
 			if (isLogOut.booleanValue() == true) {
 				logOut();
+				userId = -1;
 			}
 		}
-
-		// Button log-in
-		mSettingsButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				goToSettings();
-			}
-		});
 
 		// Button settings
 		mLoginButton.setOnClickListener(new OnClickListener() {
@@ -85,7 +76,7 @@ public class FacebookLogInActivity extends Activity {
 			}
 		});
 
-		if (userId > 0) {
+		if (userId > -1) {
 			continueToHomeScreen();
 		}
 	}
@@ -103,12 +94,14 @@ public class FacebookLogInActivity extends Activity {
 		if ((facebook != null) && facebook.isSessionValid()) {
 			facebook.extendAccessTokenIfNeeded(this, null);
 		}
-		// Check for user and then continue
-		Integer userId = mPrefs.getInt("user_id", -1);
-		if (userId > 0) {
-			continueToHomeScreen();
-		} else {
-			requestUserData();
+		if (!getIntent().hasExtra("Log out")) {
+			// Check for user and then continue
+			Integer userId = mPrefs.getInt("user_id", -1);
+			if (userId > 0) {
+				continueToHomeScreen();
+			} else {
+				requestUserData();
+			}
 		}
 	}
 
@@ -151,14 +144,17 @@ public class FacebookLogInActivity extends Activity {
 
 					@Override
 					public void onFacebookError(FacebookError e) {
+
 					}
 
 					@Override
 					public void onError(DialogError e) {
+
 					}
 
 					@Override
 					public void onCancel() {
+
 					}
 				});
 	}
@@ -187,12 +183,6 @@ public class FacebookLogInActivity extends Activity {
 						});
 					}
 				});
-	}
-
-	public void goToSettings() {
-		Intent toSettings = new Intent(FacebookLogInActivity.this,
-				SettingsActivity.class);
-		FacebookLogInActivity.this.startActivity(toSettings);
 	}
 
 	public void requestUserData() {

@@ -62,6 +62,12 @@
             android:windowSoftInputMode="stateHidden">
         </activity>
         
+         <activity
+            android:name=".Settings"
+            android:label="@string/app_name" 
+            android:windowSoftInputMode="stateHidden">
+        </activity>
+        
       
         
     </application>

@@ -14,20 +14,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class HomeScreenActivity extends Activity {
-
-	private TextView loggedInLabel;
-	private SharedPreferences mPrefs;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.home);
-
-		//Display user name
-		loggedInLabel = (TextView) findViewById(R.id.loggedInLabel);
-		mPrefs = getSharedPreferences("TapTag", MODE_PRIVATE);
-		String userName = mPrefs.getString("user_name", "No Name");
-		loggedInLabel.setText("Welcome, " + userName + "!");
 		
 		// Set the click behavior for the My Places button
 		ImageButton toVendors = (ImageButton) findViewById(R.id.myPlacesButton);
@@ -60,6 +51,17 @@ public class HomeScreenActivity extends Activity {
 				HomeScreenActivity.this.startActivity(toRewards);
 			}
 		});
+		
+		//Button settings
+		ImageButton toSettings  = (ImageButton) findViewById(R.id.settingsButton);
+		toSettings .setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent toSettings = new Intent(HomeScreenActivity.this, 
+						SettingsActivity.class);
+				HomeScreenActivity.this.startActivity(toSettings);
+			}
+		});
 
 		// Set the click behavior for the tag writing button
 		Button toWrite = (Button) findViewById(R.id.writeButton);
@@ -69,22 +71,6 @@ public class HomeScreenActivity extends Activity {
 						TapTagActivity.class);
 				HomeScreenActivity.this.startActivity(toVendor);
 			}
-		});
-		
-
-		//Button settings
-		ImageButton toSettings  = (ImageButton) findViewById(R.id.settingsButton);
-		toSettings .setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				goToSettings();
-			}
-		});
-	}
-	
-	public void goToSettings() {
-		Intent toSettings = new Intent(HomeScreenActivity.this, 
-				Settings.class);
-		HomeScreenActivity.this.startActivity(toSettings);
+		});	
 	}
 }

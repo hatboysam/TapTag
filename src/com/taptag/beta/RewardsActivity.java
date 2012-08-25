@@ -35,52 +35,52 @@ public class RewardsActivity extends Activity {
 
 	public static Context appContext;
 	private SharedPreferences mPrefs;
-	
+
 	public static String IN_PROGRESS = "In Progress";
 	public static String COMPLETED = "Completed";
 	public static String REDEEMED = "Redeemed";
-	
+
 	private RewardTabFragment completedFragment;
 	private RewardTabFragment inProgressFragment;
 	private RewardTabFragment redeemedFragment;
-	
+
 	private ActionBar actionBar;
-	
+
 	private PendingIntent nfcIntent;
 	private IntentFilter ndefFilter;
 	private IntentFilter[] intentFiltersArray;
 	private String[][] techListsArray;
 	private NfcAdapter adapter;
 	private Tag recentTag;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.rewards);
-		
+
 		mPrefs = getSharedPreferences("TapTag", MODE_PRIVATE);
-		
+
 		actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		
+
 		ActionBar.Tab inProgressTab = actionBar.newTab().setText(IN_PROGRESS);
 		ActionBar.Tab completedTab = actionBar.newTab().setText(COMPLETED);
 		ActionBar.Tab nearbyTab = actionBar.newTab().setText(REDEEMED);
-		
+
 		inProgressFragment = new RewardTabFragment(IN_PROGRESS);
 		completedFragment = new RewardTabFragment(COMPLETED);
 		redeemedFragment = new RewardTabFragment(REDEEMED);
-		
+
 		inProgressTab.setTabListener(new RewardTabListener(inProgressFragment));
 		completedTab.setTabListener(new RewardTabListener(completedFragment));
 		nearbyTab.setTabListener(new RewardTabListener(redeemedFragment));		
-		
+
 		actionBar.addTab(inProgressTab);
 		actionBar.addTab(completedTab);
 		actionBar.addTab(nearbyTab);
-		
+
 		setupLists();
-		
+
 		//NFC
 		adapter = NfcAdapter.getDefaultAdapter(this);
 		nfcIntent = PendingIntent.getActivity(this, 0, 
@@ -95,7 +95,7 @@ public class RewardsActivity extends Activity {
 		techListsArray = new String[][] { new String[] { Ndef.class.getName() } };
 
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -104,15 +104,19 @@ public class RewardsActivity extends Activity {
 		if (COMPLETED.equals(action)) {
 			actionBar.setSelectedNavigationItem(1);
 		}
-		adapter.enableForegroundDispatch(this, nfcIntent, intentFiltersArray, techListsArray);
+		if (adapter != null) {
+			adapter.enableForegroundDispatch(this, nfcIntent, intentFiltersArray, techListsArray);
+		}
 	}
-	
+
 	@Override
 	protected void onPause() {
 		super.onPause();
-		adapter.disableForegroundDispatch(this);
+		if (adapter != null) {
+			adapter.disableForegroundDispatch(this);
+		}
 	}
-	
+
 	@Override
 	public void onNewIntent(Intent intent) {
 		recentTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
@@ -125,7 +129,7 @@ public class RewardsActivity extends Activity {
 			}
 		}
 	}
-	
+
 	public void redeemReward(Reward reward, Vendor vendor) {
 		if (reward == null || vendor == null) {
 			return;
@@ -141,24 +145,24 @@ public class RewardsActivity extends Activity {
 		});
 		backgroundThread.run();
 	}
-	
+
 	public void setupLists() {
 		Thread backgroundThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				RewardLoadTask loadInProgressTask = new RewardLoadTask();
 				loadInProgressTask.execute(new String[] {IN_PROGRESS});
-				
+
 				RewardLoadTask loadCompletedTask = new RewardLoadTask();
 				loadCompletedTask.execute(new String[] {COMPLETED});
-	
+
 				RewardLoadTask loadNearbyTask = new RewardLoadTask();
 				loadNearbyTask.execute(new String[] {REDEEMED});
 			}	
 		});
 		backgroundThread.run();
 	}
-	
+
 	/**
 	 * Make a Toast Message with "SHORT" Length
 	 * @param message
@@ -166,7 +170,7 @@ public class RewardsActivity extends Activity {
 	private void toastShort(String message) {
 		Toast.makeText(RewardsActivity.this, message, Toast.LENGTH_SHORT).show();
 	}
-	
+
 	public class RedeemRewardTask extends AsyncTask<Redemption, Void, RedemptionResponse> {
 
 		@Override
@@ -174,7 +178,7 @@ public class RewardsActivity extends Activity {
 			Redemption toRedeem = params[0];
 			return TapTagAPI.redeemReward(toRedeem);
 		}
-		
+
 		@Override
 		protected void onPostExecute(RedemptionResponse response) {
 			if (response.success()) {
@@ -185,15 +189,15 @@ public class RewardsActivity extends Activity {
 			}
 			completedFragment.dismissDialog();
 		}
-		
+
 	}
-	
+
 	public class RewardLoadTask extends AsyncTask<String, Void, Void> {
 
 		RewardAdapter adapter;
 		RewardTabFragment toUpdate;
 		String type;
-		
+
 		@Override
 		protected Void doInBackground(String... params) {
 			type = params[0];
@@ -214,23 +218,23 @@ public class RewardsActivity extends Activity {
 			adapter = new RewardAdapter(RewardsActivity.this, R.layout.rewardlistitem, rewards);
 			return null;
 		}
-		
+
 		@Override
 		protected void onPostExecute(Void result) {
 			toUpdate.setListAdapter(adapter);
 			adapter.notifyDataSetChanged();
 		}
-		
+
 	}
-	
+
 	public class RewardTabListener implements ActionBar.TabListener {
 
 		public Fragment fragment;
-		
+
 		public RewardTabListener(Fragment fragment) {
 			this.fragment = fragment;
 		}
-		
+
 		@Override
 		public void onTabReselected(Tab tab, FragmentTransaction ft) {
 			// TODO Auto-generated method stub	
@@ -239,14 +243,14 @@ public class RewardsActivity extends Activity {
 		@Override
 		public void onTabSelected(Tab tab, FragmentTransaction ft) {
 			ft.replace(R.id.fragment_container, fragment);
-			
+
 		}
 
 		@Override
 		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
 			ft.remove(fragment);		
 		}
-		
+
 	}
-	
+
 }

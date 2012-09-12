@@ -17,18 +17,20 @@
 
             <ImageButton
                 android:id="@+id/myPlacesButton"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginRight="15dp"
                 android:background="@color/button_back"
-                android:padding="30dp"
+                android:padding="40dp"
                 android:src="@drawable/tag" />
 
             <ImageButton
                 android:id="@+id/nearMeButton"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginLeft="15dp"
                 android:background="@color/button_back"
-                android:padding="30dp"
+                android:padding="40dp"
                 android:src="@drawable/places" />
         </TableRow>
 
@@ -39,6 +41,7 @@
 
             <TextView
                 android:id="@+id/nearMeLabel"
+                android:layout_marginRight="15dp"
                 android:gravity="center"
                 android:text="My Places"
                 android:textSize="10pt" >
@@ -46,6 +49,7 @@
 
             <TextView
                 android:id="@+id/nearMeLabel"
+                android:layout_marginLeft="15dp"
                 android:gravity="center"
                 android:text="Near Me"
                 android:textSize="10pt" >
@@ -59,19 +63,21 @@
 
             <ImageButton
                 android:id="@+id/rewardsButton"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginRight="15dp"
                 android:background="@color/button_back"
-                android:padding="30dp"
+                android:padding="40dp"
                 android:src="@drawable/rewards" />
 
             <ImageButton
-                android:id="@+id/settingsButton"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:id="@+id/scanButton"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginLeft="15dp"
                 android:background="@color/button_back"
-                android:padding="30dp"
-                android:src="@drawable/settings" />
+                android:padding="40dp"
+                android:src="@drawable/scan" />
         </TableRow>
 
         <TableRow
@@ -81,25 +87,57 @@
 
             <TextView
                 android:id="@+id/rewardsLabel"
+                android:layout_marginRight="15dp"
                 android:gravity="center"
                 android:text="Rewards"
                 android:textSize="10pt" >
             </TextView>
 
             <TextView
+                android:id="@+id/scanLabel"
+                android:layout_marginLeft="15dp"
+                android:gravity="center"
+                android:text="Scan QR"
+                android:textSize="10pt" >
+            </TextView>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <ImageButton
+                android:id="@+id/settingsButton"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginRight="15dp"
+                android:background="@color/button_back"
+                android:padding="40dp"
+                android:src="@drawable/settings" />
+
+            <Button
+                android:id="@+id/writeButton"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="10dp"
+                android:text="Write Tags" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
                 android:id="@+id/settingsLabel"
+                android:layout_marginRight="15dp"
                 android:gravity="center"
                 android:text="Settings"
                 android:textSize="10pt" >
             </TextView>
         </TableRow>
     </TableLayout>
-
-    <Button
-        android:id="@+id/writeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="Write Tags" />
 
 </LinearLayout>

@@ -25,7 +25,8 @@ import android.widget.Toast;
 public class VendorActivity extends NetworkActivity {
 
 	public static final String VIEW_VENDOR = "View Vendor";
-
+	public static final String FROM_QR = "FROM_QR";
+	
 	private ListView rewardListView;
 	private TextView vendorNameTextView;
 	private TextView vendorAddressTextView;
@@ -68,6 +69,9 @@ public class VendorActivity extends NetworkActivity {
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
 			setInfoFromNFCIntent(intent);
 			setIntent(new Intent()); // Consume this intent.
+		} else if (FROM_QR.equals(intent.getAction())) {
+			setInfoFromQRIntent(intent);
+			setIntent(new Intent()); // Consume this intent
 		} else if (VendorActivity.VIEW_VENDOR.equals(intent.getAction())) {
 			Bundle extras = intent.getExtras();
 			vendor = (Vendor) extras.get("vendor");
@@ -80,6 +84,8 @@ public class VendorActivity extends NetworkActivity {
 	protected void onNewIntent(Intent intent) {
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
 			setInfoFromNFCIntent(intent);
+		} else if (FROM_QR.equals(intent.getAction())) {
+			setInfoFromQRIntent(intent);
 		} else if (VendorActivity.VIEW_VENDOR.equals(intent.getAction())) {
 			Bundle extras = intent.getExtras();
 			vendor = (Vendor) extras.get("vendor");
@@ -112,6 +118,18 @@ public class VendorActivity extends NetworkActivity {
 	private void setInfoFromNFCIntent(Intent intent) {
 		NdefMessage firstMessage = NFCActions.getFirstMessage(intent);
 		vendor = NFCActions.vendorFromNdef(firstMessage);
+		setInfoFromVendor(vendor);
+		Thread backgroundThread = new Thread(new Runnable() {
+			public void run() {
+				TapSubmitTask task = new TapSubmitTask();
+				task.execute(null, null);
+			}
+		});
+		backgroundThread.run();
+	}
+	
+	private void setInfoFromQRIntent(Intent intent) {
+		vendor = (Vendor) intent.getExtras().get("vendor");
 		setInfoFromVendor(vendor);
 		Thread backgroundThread = new Thread(new Runnable() {
 			public void run() {
